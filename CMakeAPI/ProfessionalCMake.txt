@@ -1,0 +1,35 @@
+##############################################################################################################################
+#此文件脱胎自Professional Cmake一书，表述各个函数以及各个参数的基本用法
+#
+#
+#
+##############################################################################################################################
+
+
+
+
+
+##############################################################################################################################
+设置normal Variable, 该变量仅仅会在CMakeLists中生效
+#变量无需再使用之前进行声明，为声明的变量进行使用不会报错，会以空字符串进行代替
+#不带空格的名称无需用引号扩起，如果出现多个value那么中间的空格将会变成“；”
+set(varname varlue...[PARENT_SCOPE]) 
+# 这种set variable 的方式仅仅只在当前的CMakeLists中生效
+# set(USER hello)
+# #在[[]]或者[=...[ ]=...]之中包裹的对象不会再进行substitution以及escaping, 简单理解就是-----原样输出
+ set(a [[ 
+ "${USER} World...."
+ ]]
+ )#输出   "${USER} World...."
+# set(b "\"${USER} World....\"") #没有包裹在[[表达式之中引号需要加入\号，同时变量会进行替换  输出"hello World...."
+##############################################################################################################################
+ 设置cache variable ，该变量会放置在CMakeCache中，整个build过程都会生效
+ set(varName value... CACHE type "docstring" [FORCE])
+# CACHE 关键字代表生成CACHEVARIABLE
+# type和docstring仅仅是用来给CMAKE-GUI的提示标记,docstring是鼠标悬浮其上的提示
+ option(optvar helpstring [initialValue])  等价于set(optvar initialValue CACHE BOOL helpstring)但是更加的清晰和直接
+# 注意:倘若normal Variable 和 Cache Variable存在同名变量，那么在时候第一次会显示Cache第二次以后会使用normal
+#set(trafficLight Green CACHE STRING "Status of something")
+mark_as_advanced(CLEAR trafficLight) #gui仅会显示no-advance变量 clear表达no-advance，FORCE代表Advance
+#set_property(CACHE trafficLight PROPERTY STRINGS Red Orange Green) #更改gui上的显示
+########################################################################################################################################
