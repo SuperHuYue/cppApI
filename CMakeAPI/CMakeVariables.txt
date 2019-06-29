@@ -1,0 +1,9 @@
+#CMAKE VARIABLE的解释
+
+CMAKE_SOURCE_DIR   #source tree的顶层目录，处于最顶层CMakeLists.txt所存在的地方
+
+CMAKE_BINARY_DIR   #build tree的最顶层目录
+
+CMAKE_CURRENT_SOURCE_DIR # 正在被CMake处理的CMakeLists.txt的目录位置，其会根据add_subdirectory()的使用被更新
+
+CMAKE_CURRENT_BINARY_DIR # 正在被CMake处理的build的目录位置，其会根据add_subdirectory()的使用被更新
