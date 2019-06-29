@@ -33,3 +33,100 @@ set(varname varlue...[PARENT_SCOPE])
 mark_as_advanced(CLEAR trafficLight) #gui仅会显示no-advance变量 clear表达no-advance，FORCE代表Advance
 #set_property(CACHE trafficLight PROPERTY STRINGS Red Orange Green) #更改gui上的显示
 ########################################################################################################################################
+查找字符串 string(FIND inputString subString outVar [REVERSE]) 
+#set(longstr adcdefabcdef)
+#set(shortbit def)
+#string(FIND ${longstr} ${shortbit} fwdindex)
+string(FIND ${longstr} ${shortbit} revindex REVERSE)
+#message("fwdindex = ${fwdindex}, revindex = ${revindex}"    #输出fwdindex = 3,revIndex=9
+替换字符串 string(REPLACE matchString replaceWith outVar input [intput....]) #注意多个input输入系统会将其利用没有分隔符的记号连接起来在做替换，这样的作法可能造成意想不到的后果，故建议不要多个input一起输入
+string(REPLACE c YES output ${longstr}) #输出abYESDEFABYESdef 
+正则字符串查找
+string(REGEX MATHCH regex outVar input [input...]) #查找input中第一个匹配(regex规则)并且存在outVAr中
+string(REGEX MATCHALL regex outVar input [input...]) #查找input中所有的匹配(regex规则)并且以列表的形式存在outVAr中
+string(REGEX REPLACE regex replaceWith outVar input [intput...])
+#ex: set(longstr adcdefabcdef)
+#ex：string(REGEX MATCHCALL "[ace]" matchVar ${longstr}) #输出： a;c;e;a;c;e x
+#ex：string(REGEX REPLACE "([de])" [[x\1Y]] replVar ${longstr}) #abcXdYXeYfabcXdYXeYf
+提取子字符串
+string(SUBSTRING input index length outVar) #在input中从index起提取length长度的字符串存入outVar中 （length= -1 则提取后面所有）
+-----
+string(LENGTH input outVar)       #获取字符串长度
+string(TOLOWER input outVar)      #转换为小写        
+string(TOUPPER input outVar)      #转换为大写
+string(STRIP input outVar)        #左右两边移除空
+#还包含字符比较，哈希，时间撮等操作--->用的较少，阅读文档
+################################################################################################################################################################################
+Lists 列表   ---------------列表就是一串被分号将item分隔的字符串
+#第一个参数代表需要操作的类型， 第二个参数代表需要操作的对象（必修是变量）
+#所有传入索引均可以为负值，代表从后往前的索引
+List(LENGTH listVar outVar)                 #获取列表长度
+list(GET listVar index [index...] outVar)   #获取固定索引的内容
+list(APPEND listVar item [item...])         #将item append到list的末尾
+list(INSERT listVar index item [item...])   #将item insert到list的index处
+list(FIND mylist value outVar)              #找到mylist中的匹配value的项，并返回outVAr（索引）
+list(REMOVE_ITEM myList value [value...])   #将value从mylist中移除
+list(REMOVE_AT myList index [index...])     #将value处于index索引中的内容移除
+list(REMOVE_DIPLICATES myList)              #祛除重复项目
+list(REVERSE mylist)                        #反向排列list
+list(SORT myList)                           #排序（依照alphabetical）
+
+# Example
+# set(myList a b c)              #creates the list "a;b;c"
+# list(LENGTH myList len)        #len = 3
+# list(GET myList 2 1 letters)   #c;b
+#
+############################################################################################
+math 操作
+math(EXPR outVar mathExpr) ---EXPR(必加参数)，outvar--输出数值   mathExpr----数学表达式
+#   set(x 3)
+#   set(y 7)
+#   math(EXPR z "(${x} + ${y}) / 2")   #z = 5
+############################################################################################
+Logic Operations
+if(NOT expression)
+if(expression1 AND expression2)
+if(expression1 OR expression2)
+#ex: if(NOT (expression1 AND (expression2 OR expression3)))
+comparison test 
+if(value1 OPERATOR value2) #OPERATOR 可以为LESS GREATER.....等等，分为numeric， string， version三类，具体查表
+正则匹配
+if(value MATCHES regex) #匹配成功的项目将会存于CMAKE_MATCH_<n>中，其中0是整个匹配的字符串
+# ex: if("Hi from ${who}" MATCHES "Hi from (Fred|Barney).*)
+#          message("${CMAKE_MATCH_1} says hello")
+#     endif()
+FileSystem Tests 
+#if(EXISTS pathToFileOrDir) #
+#if(IS_DIRECTORY pathToDir)
+#if(IS_SYMLINK fileName)
+#if(IS_ABSOLUTE path)
+#if(file1 IS_NEWER_THAN file2)
+Existence Tests 
+if(DEFINED name)   #检查name是否存在，存在返回true
+#ex:if(DEFINED SOMEVAR)          #checks for a CMake variable
+#   if(DEFINED ENV{SOMEVAR})     #checks for an environmental variable
+if(COMMAND name)                #checks for CMake command,function,macro with specified name exists
+if(POLICY name)                 #checks for whether a particular policy is known to cmake
+if(TARGET name)                 #checks for Cmake target exists (defined by add_excutable,add_libray..)
+if(TEST name)                   #check for name whether is defined by the command add_test()
+#############
+foreach 循环
+foreach(loopvar RANGE start stop [step])
+foreach(loopvar range value) #等价于foreach(loopvar RANGE 0 value)
+foreach(loopvar IN [LISTS listVar1 ...] [ITEMS item1 ...])
+    #....
+endforeach() 
+#set(list1 A B C D)
+#set(list2)                            #允许为空
+#set(list3 E F G)
+#set(foo willonbeshown)
+#foreach(loopvar IN LISTS list1 list2 list3 ITEMS foo bar) #对item
+#   message("Iteration for: ${loopvar}") 
+#endforeach()
+################################################################################################
+while 循环
+while(condition)
+    #...
+endwhile()
+
+ 
