@@ -13,7 +13,8 @@
 设置normal Variable, 该变量仅仅会在CMakeLists中生效
 #变量无需再使用之前进行声明，为声明的变量进行使用不会报错，会以空字符串进行代替
 #不带空格的名称无需用引号扩起，如果出现多个value那么中间的空格将会变成“；”
-set(varname varlue...[PARENT_SCOPE]) 
+#PARENT_SCOPE----->假设CMakeList.tx为多层级的（里面存在add_subdirectory（）..）, 使用PARENT_SCOPE即在其父scope定义varname且名称为value，如果父scope已经存在该varname则修改父scope的内容
+set(varname value...[PARENT_SCOPE]) 
 # 这种set variable 的方式仅仅只在当前的CMakeLists中生效
 # set(USER hello)
 # #在[[]]或者[=...[ ]=...]之中包裹的对象不会再进行substitution以及escaping, 简单理解就是-----原样输出
@@ -123,10 +124,40 @@ endforeach()
 #foreach(loopvar IN LISTS list1 list2 list3 ITEMS foo bar) #对item
 #   message("Iteration for: ${loopvar}") 
 #endforeach()
-################################################################################################
+##############################################################################################################################################################################################################
 while 循环
 while(condition)
     #...
 endwhile()
+跳出循环
+break()
+continue()
+#############################################################################################################################################################################################################
+#add_subdirectory()会开辟一个child scope这个scope有如下特点（调用add_subdirector()的CMakeList.txt的空间称为calling scope， 其指向的空间成为child_scope)
+# 1.定义在calling scope空间中的变量在子空间中均可见。
+# 2.child scope中定义的*变量*（与target区分开来）在calling scope中不可见
+# 3.任何在child scope中的变化仅仅只在该子空间中有效。
+# 4.child scope与calling scope property在正常情况下互不干扰
+add_subdirectory(sourceDir [binaryDir] [EXLUDE_FROM_ALL]) #将另外一个dir导入build之中，该build必须有自己的CMakelist.txt
+############################################################################################################################################################################################################
+#include()与add_subdirectory()相似，但有如下不同
+# 1.include()输入的是一个filename(一般情况带.cmake后缀,但其可以为任何数据)而不是dir
+# 2.include()不会产生新的variable scope
+# 3.include() 和 add_sub_directory()都会引入新的policy scope, 但是include可以通过给如NO_POLITY_SCOPE选项去禁止产生新的polity scope，add_subdirectory()无法做到这一点
+# 4.CMAKE_CURRENT_SOURCE_DIR和CMAKE_CURRENT_BINARY_DIR 在include()函数使用时不会改变。而add_subdirectory()会
+# 针对第四个属性产生的问题，CMAKE给出了三个新的变量去解决，分别为CMAKE_CURRENT_LIST_DIR、CMAKE_CURRENT_LIST_FILE、CMAKE_CURRENT_LIST_LINE
+include(fileName [OPTIONAL] [RESULT_VARIABLE myVar] [NO_POLITY_SCOPE])
+include(module [OPTIONAL] [RESULT_VARIABLE myVar] [NO_POLITY_SCOPE])
+##########################################################################################################################################################################################################
+return() #跳出处理scope，并不能返回值仅仅是将当前的处理scope结束
+##########################################################################################################################################
+函数与宏
+function(name [arg1 [arg2 [...]]])
+    #Function body(i.e. commands)....
+endfunction()
+
+macro(name [arg1 [arg2 [...]]])
+    #Macro body(i.e commands).....
+endmacro()
 
  

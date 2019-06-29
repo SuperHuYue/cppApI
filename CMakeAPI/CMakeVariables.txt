@@ -1,4 +1,4 @@
-#CMAKE VARIABLE的解释
+#CMAKE VARIABLE的解释  professional cmale
 
 CMAKE_SOURCE_DIR   #source tree的顶层目录，处于最顶层CMakeLists.txt所存在的地方
 
@@ -7,3 +7,11 @@ CMAKE_BINARY_DIR   #build tree的最顶层目录
 CMAKE_CURRENT_SOURCE_DIR # 正在被CMake处理的CMakeLists.txt的目录位置，其会根据add_subdirectory()的使用被更新
 
 CMAKE_CURRENT_BINARY_DIR # 正在被CMake处理的build的目录位置，其会根据add_subdirectory()的使用被更新
+
+#p65
+CMAKE_CURRENT_LIST_DIR   #和CMAKE_CURRENT_SOURCE_DIR类似，不同点在于，他会跟随include()命令进行更新--->给的永远是绝对path
+
+CMAke_CURRENT_LIST_FILE  #给出正在进行处理的文件的绝对path  
+
+CMAKE_CURRENT_LIST_LINE  #hold当前正在处理的文件命令的行数    
+#####################################################################    
