@@ -152,6 +152,40 @@ include(module [OPTIONAL] [RESULT_VARIABLE myVar] [NO_POLITY_SCOPE])
 return() #跳出处理scope，并不能返回值仅仅是将当前的处理scope结束
 ##########################################################################################################################################
 函数与宏
+#不同点：
+#1.参数上：函数中传入的为Variable，可以使用if(DEFINED varName)进行检验，但是macro为单纯的宏命令替换，传入的为string，无法做到这一点
+#2.scope:function引入了新的Variable scope（没有引入新的policy socpe） 而Macro没有
+#
+#特点:1.参数大小写敏感
+#     2.除了定义的参数名称之外，function和macro还有一些自动定义的变量
+#      ARGC:输入参数的总数，是有名参数和无名参数的总和
+#     ex: {
+#            function(func arg)
+#            message(${ARGC}......)   输出2
+#             message(${ARGV1})       #可以通过ARGV..用来索引输入的内容
+#            foreach(loopvar IN LISTS arg)
+#                message(${loopvar})  输出1，证明当输入多余函数参数的时候不会产生list，而是将多出的部分变为无名变量
+#            endforeach(loopvar in)
+#            endfunction(func arg)
+#
+#            func(1 2) 给出的参数为1，2但是该函数仅仅只接受一个参数(arg:1)另外一个参数变为无名参数，注意，经过foreach测试，不会产生一个list变量
+#          }
+#          
+#        {
+#             macro(func arg)
+#                message("macro in ${ARGC}......")
+#                message(${ARGV2})  #可以用ARGV...来索引输入的参数
+#                list(LENGTH ARGV out)
+#                foreach(loopvar IN ITEMS ${ARGV}) 注意与function的foreach遍历的差别，原因是应为在macro中ARGV为string类型而不是变量，所以不应该将其放置于需要给入变量的IN LISTS中，否则其会被当做变量进行处理，从而产生异常结论
+#                    message(${loopvar})
+#                endforeach()
+#            endmacro()
+#        }
+#       ARGV:list variable包含了所有传入函数的参数(named and unnamed)，如果将上式LISTS后的arg变成ARGV，那么就可以输出对应的输入参数
+#       ARGN:与ARGV差不多，不同点在于，其仅仅是包含了unnamed arguments(ex:option unnamed ones)
+#     3.不支持返回值，function可以通过set()的parent scope向他的父亲进行参数传递
+#
+#
 function(name [arg1 [arg2 [...]]])
     #Function body(i.e. commands)....
 endfunction()
@@ -159,5 +193,145 @@ endfunction()
 macro(name [arg1 [arg2 [...]]])
     #Macro body(i.e commands).....
 endmacro()
+##############################################################################################
+keyword arguments 函数和宏的高端定义方式
+include(CMakeParseArguments) #Needed only for CMake 3.4 and earlier
+cmake_parse_arguments(
+    prefix                     #代表需要输出内容的前缀，检测出来的内容都会加上prefix_xxx
+    noValueKeywords            #需要检测的无参数类型的关键字，实际传入参数如果有，那么prefix_xxxx将会为真
+    singleValueKeywords        #需要检测的有一个参数的关键字
+    multiValueKeywords         #需要检测的有多个参数的关键字
+    argsToParse                #待传入的无名参数---一一般为${ARGN}
+) 
+#ex:
+#    function(func)
+#        #Define the supported set of keywords
+#        set(prefix ARG)
+#        set(noValues ENABLE_NET COOL_STUFF)
+#        set(singleValues TARGET)
+#        set(multiValues SOURCES IMAGES)
+#
+#        #Process the arguments passed in
+#        include(CMakeParseArguments)
+#        cmake_parse_arguments(${prefix}
+#                              "${noValues}" #don't forget the ""
+#                              "${singleValues}"
+#                              "${multiValues}"
+#                              ${ARGN})
+#        #Log details for each supported keyword
+#
+#        message("Option summary:")
+#        foreach(arg IN LISTS noValues)
+#            if(${${prefix}_${arg}})      #被解析出来的参数都须加入prefix_头进行索引
+#                message(("   ${arg} enabled")) #novalue不为空则输入中存在这个参数
+#            else()
+#                message("   ${arg} disabled")
+#        endforeach()
+#        foreach(arg IN LISTS singleValues multiValues)
+#            #Single argument values will print as a simple string
+#            #Multiple argument values will print as a list
+#            message("   ${arg} = ${${prefix}_${arg}}") #ex：TARGET=myAPP SOURCES=foo.cpp;bar.cpp
+#        endforeach()
+#    endfunction()
+#    #Examples of calling with different combinations of keyword arguments
+#    func(SOURCES foo.cpp bar.cpp TARGET myApp ENABLE_NET)
+#    func(COOL_STUFF TARGET dummy IMAGES here.png there.png gone.png)
+#
+#    输出:
+#    Option summary:
+#        ENABLE_NET enabled
+#        COOL_STUFF disabled
+#        TARGET = myApp
+#        SOURCES = foo.cpp;bar.cpp 
+#        IMAGES = #输入参数中没有该选项的，则对应内容为空
+#
+#    Option summary:
+#        ENABLE_NET disabled
+#        COOL_STUFF enabled
+#        TARGET = dummy
+#        SOURCES =
+#        IMAGES = here.png;there.png;gone.png 
+overridding commands 关于相同函数名称的一些说法 p76
+###############################################################################################################
+General Property Commands  P79
+set_property(entitySpecific                  #决定哪一些对象的属性将会被设定
+            [APPEND][APPEND_STRING]
+            PROPERTY propName [value1 [value2 [...]]])
+
+get_property(resultVar entitySpecific
+            PROPERTY propName
+            [DEFINED | SET |BRIEF_DOCS | FULL_DOCS] 
+
+define_property(entityType
+               PROPERTY proName [INHERITED]
+               BRIEF_DOCS briefDoc [moreBriefDocs...])
+               FULL_DOCS fullDoc [moreFullDocs...]
+########################################################################################################    
+Global Properties 全局属性
+#全局属性影响这个build过程，决定了编译工具以及各方面的表现（从工程文件的组成到各个程度的构建过程）
+#resultVar: 保存了需要返回的属性内容
+#property：可以是任务全局属性名称以及下列pseudo properties(如下的指令并不能被get_property索引)：
+# 1.VARIABLES: return a list of all regular(ex:non-cache) variables
+# 2.CACHE_VARIABLES: return a list all cache variables
+# 3.COMMANDS:返回所有定义了的commands, functions and macros（包括自定义的和CMAKE predefined的）
+# 4.MACROS：返回所有macros，是3的子集，注意返回的大小写可能与定义的不同
+# 5.COMPONENTS: Return a list of all components defined by install() commands.
+get_cmake_property(resultVar property)
+####################################################################################################################################
+Directory Properties 目录属性 P8 3 
+set_directory_properties(PROPERTIES prop1 val1 [prop2 val2 ...]) #获得current directory的属性
+get_directory_property(resultVar [DIRECTORY dir] property)
+get_directory_property(resultVar [DIRECTORY dir] DEFINITION varName)
+####################################################################################################################
+Target Properties 目标属性
+#掌控这如何将source file 转变成 binaries的规则
+set_target_properties(target1 [target2...]
+                    PROPERTIES 
+                    propertyName1 value1
+                    [propertyName2 value2]...)
+
+get_target_property(resultVar target propertyName)
+########################################################################################################################
+Source Properties 源属性
+#用于给单个的源文件定义属性 注意：源属性仅仅在定义该文件的directory scope中可见
+set_source_files_properties(file1 [file2 ...]
+                            PRPPERTIES 
+                            propertyName1 value1
+                            [propertyName2 value2]...)
+get_source_file_property(resultVar sourceFile propertyName)
+################################################################################################################################################
+Cache Variable Properties 
+#################################################################################################
+other property types 
+#测试属性
+set_tests_properties(test1 [test2...]
+                    PROPERTIES
+                    propertyName1 value1
+                    [propertyName2 value2]...)
+get_test_property(resultVar test propertyNam)
+#####################################################################################################
+Generator Expressions 生成表达式
+#大部分的变量都是在configuration时期被确定，而生成表达是则是会在Generation过程中才会被确定
+生成表达格式$<....> 其中，尖括号之间的内容有多种不同的表现形式
+性质：生成表达是是允许内嵌的
+####
+# 1.simple bolean logic 简单布尔逻辑
+#$<1:...>  表达式的结果将会是...部分
+#$<0:...>  ...部分的内容将会被忽略表现形式为一个空的字符串
+#$<BOOL:...>  将会替换任何CMake认为是false的值到0，其他的内容到1--->这一特性会用在上面写入的两种表达之中（应为仅仅支持如此）
+#$<AND:expr[,expr...]>  用与运算判断用，隔开的expr，输出0或者1   注意：由于其输出为0或者1，所以该式子需要用$<BOOL:expr>进行包含
+#$<OR:expr[,expr...]>   用或运算判断用，隔开的expr，输出0或者1   注意：由于其输出为0或者1，所以该式子需要用$<BOOL:...>进行包含
+#$<NOT:expr>   返回表达式的负性结果
+#$<IF:expr,val1,val0>  判断expr如果正确则为var1否则为var0  ,only supported CMake3.8 and later
+#
+
+
 
  
+
+
+
+
+
+
+
