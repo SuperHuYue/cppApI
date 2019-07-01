@@ -46,8 +46,14 @@ conan_cmake_run(
     REQUIRES  jsoncpp/1.8.4@theirix/stable
     REQUIRES  glog/0.4.0@bincrafters/stable
     REQUIRES  opencv/3.4.5@conan/stable
-    OPTIONS  jsoncpp:shared=True
     BASIC_SETUP CMAKE_TARGETS)
+#下载完毕后的使用
+target_link_libraries(
+  websocket
+  CONAN_PKG::asio
+  CONAN_PKG::glog
+  CONAN_PKG::jsoncpp
+ ) 
 
 
 #设置编译器宏选项

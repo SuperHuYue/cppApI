@@ -315,21 +315,44 @@ Generator Expressions 生成表达式
 生成表达格式$<....> 其中，尖括号之间的内容有多种不同的表现形式
 性质：生成表达是是允许内嵌的
 ####
-# 1.simple bolean logic 简单布尔逻辑
-#$<1:...>  表达式的结果将会是...部分
-#$<0:...>  ...部分的内容将会被忽略表现形式为一个空的字符串
-#$<BOOL:...>  将会替换任何CMake认为是false的值到0，其他的内容到1--->这一特性会用在上面写入的两种表达之中（应为仅仅支持如此）
-#$<AND:expr[,expr...]>  用与运算判断用，隔开的expr，输出0或者1   注意：由于其输出为0或者1，所以该式子需要用$<BOOL:expr>进行包含
-#$<OR:expr[,expr...]>   用或运算判断用，隔开的expr，输出0或者1   注意：由于其输出为0或者1，所以该式子需要用$<BOOL:...>进行包含
-#$<NOT:expr>   返回表达式的负性结果
-#$<IF:expr,val1,val0>  判断expr如果正确则为var1否则为var0  ,only supported CMake3.8 and later
-#
-
-
-
- 
-
-
+# 1.simple bolean logic 简单布尔逻辑,处理0与1的逻辑
+$<1:...>  表达式的结果将会是...部分
+$<0:...>  ...部分的内容将会被忽略表现形式为一个空的字符串
+$<BOOL:...>  将会替换任何CMake认为是false的值到0，其他的内容到1--->这一特性会用在上面写入的两种表达之中（应为仅仅支持如此）
+$<AND:expr[,expr...]>  用与运算判断用，隔开的expr，输出0或者1   注意：由于其输出为0或者1，所以该式expr需要用$<BOOL:...>进行包含
+$<OR:expr[,expr...]>   用或运算判断用，隔开的expr，输出0或者1   注意：由于其输出为0或者1，所以该式expr需要用$<BOOL:...>进行包含
+$<NOT:expr>   返回表达式的负性结果
+$<IF:expr,val1,val0>  判断expr如果正确则为var1否则为var0  ,only supported CMake3.8 and later
+#ex:
+#1.$<1:foo>                         ------------->foo
+#2.$<0:foo>                         ------------->空
+#3.$<true:foo>                      ------------->错误，必须为0或者1
+#4.$<$<BOOL:true>:foo>              ------------->foo
+#5.$<$<NOT:0>:foo>                  ------------->foo
+#6.$<$<NOT:1>:foo>                  ------------->空
+#7.$<$<NOT:true>:foo>               ------------->错误，NOT需要0或者1的输入
+#8.$<$<AND:1,0>:foo>                ------------->空
+#9.$<$<OR:1,0>:foo>                 ------------->foo
+#10.$<1:$<$<BOOL:false>:foo>>       ------------->空
+#11.$<IF:$<BOOL:${foo}>,yes,no>     ------------->最终结果去接与foo的取值
+字符串，数字，版本比较,符合返回1、否则返回1
+$<STREQUAL:string1,string2>
+$<EQUAL:number1,number2>
+$<VERSION_EQUAL:version1,version2>
+$<VERSION_GREATER:version1,version2>
+$<VERSION_LESS:version1,version2>
+#############################################################################################################
+检测buildtype:
+$<CONFIG:arg>   如果arg与当前的buildtype一致，那么会输出1，否则为0
+#ex:debug type将会链接checkedAlgo库，其他的build type将会链接fastAlgo库
+# add_executable(myApp src1.cpp src2.cpp)
+# #before CMake 3.8
+# target_link_libraries(myApp PRIVATE
+#                      $<$<CONFIG:Debug>:checkedAlgo>
+#                      $<$<NOT:$<CONFIG:Debug>>:fastAlgo>)  
+# #CMake 3.8 or later allows a more concise form
+# target_link_libraries(myApp PRIVATE
+#             $<IF:$<CONFIG:Debug>,checkedAlgo,fastAlgo>)
 
 
 

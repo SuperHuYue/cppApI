@@ -1,0 +1,75 @@
+#step1:网络上下载websocket++的源文件用CMAKE运行生成include文件夹
+#step2：将生成的include文件夹拷贝到当前项目下
+#step3：运行此cmake
+
+
+
+
+
+cmake_minimum_required(VERSION 3.12)
+cmake_policy(VERSION 3.12)
+
+project(websocket)
+
+#######################################################
+#安装依赖
+#使用conan下载配置文件
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
+  message(STATUS "Download conan.cmake script")
+  file(DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/v0.14/conan.cmake"
+                "${CMAKE_BINARY_DIR}/conan.cmake"
+       SHOW_PROGRESS STATUS zStatus)
+  list(GET zStatus 0 sStatusCode)
+  if(NOT sStatusCode EQUAL 0)
+    file(REMOVE "${CMAKE_BINARY_DIR}/conan.cmake")
+    list(GET zStatus 1 sStatusText)
+    message(FATAL_ERROR "Download conan.cmake script failed: ${sStatusText}")
+  endif()
+  message(STATUS "Download conan.cmake script - done")
+endif()
+include("${CMAKE_BINARY_DIR}/conan.cmake")
+
+conan_cmake_run(
+    REQUIREs  gflags/2.2.2@bincrafters/stable
+    REQUIRES  asio/1.12.0@bincrafters/stable
+    REQUIRES  jsoncpp/1.8.4@theirix/stable
+    REQUIRES  glog/0.4.0@bincrafters/stable
+  #  OPTIONS  jsoncpp:shared=True
+    BASIC_SETUP CMAKE_TARGETS
+    BUILD missing)
+
+set(ROOTFILES)
+file(GLOB ROOTFILES *.cpp *.h *.hpp)
+include_directories(${CMAKE_SOURCE_DIR})
+
+
+#######################################################
+
+
+
+#################################################
+list(LENGTH ROOTFILES length)
+message(${length})
+if(length EQUAL 0)
+   message("NO source files....")
+   return()
+else()
+    foreach(loopvar IN LISTS ROOTFILES)
+        message("included: ${loopvar}")
+    endforeach()
+   add_executable(websocket ${ROOTFILES})
+   target_link_libraries(
+    websocket
+    CONAN_PKG::asio
+    CONAN_PKG::glog
+    CONAN_PKG::jsoncpp
+   ) 
+  # target_compile_definitions(
+  #   websocket PRIVATE "_WEBSOCKETPP_CPP11_TYPE_TRAITS_")
+    set_target_properties(
+    websocket 
+    PROPERTIES CXX_STANDARD          17
+               CXX_STANDARD_REQUIRED ON)
+
+endif()
+#################################################
