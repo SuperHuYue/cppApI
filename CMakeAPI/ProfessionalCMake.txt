@@ -354,7 +354,57 @@ $<CONFIG:arg>   如果arg与当前的buildtype一致，那么会输出1，否则
 # target_link_libraries(myApp PRIVATE
 #             $<IF:$<CONFIG:Debug>,checkedAlgo,fastAlgo>)
 
+#######################################################################################################################
+Modules
+#当时用module名称的时候，会查找module.cmake的文件
+#查找过程首先查找CMAKE_MODULE_PATH中的路径，如果没有就会自动去查找Cmake默认存放module的路径进行查找，以匹配成功的第一个当作目标
+#因此改变CMAKE_MODULE_PATH就可以认为定义搜索方式
+include(module [OPTIONAL] [RESULT_VARIABLE myVar][NO_POLICY_SOCPE]) #用于添加module或者将module中的代码直接注入到模块中
+#ex:
+# cmake_minimum_required(VERSION 3.0)
+# project(Example)
+# list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+# #Inject code from project-provided modules
+# include(CoolThings)
+# include(MyModule)
 
+除了include另外一种调用Module的方式是find_package(PackageName)
+......后期补全
+############################################################################
+系统内嵌实用性的modules
+#此函数将会按照每一个entry的指定的特性 p97
+include(CMakePrintHelpers)
+cmake_print_properties([TARGETS target1 [target2...]]
+                       [SOURCES source1 [source2...]]
+                       [DIRECTORIES dir [dir2...]]
+                       [TESTS test1 [test2...]]
+                       [CACHE_ENTRIES var1 [var2...]]
+                       PROPERTIES property1 [property2...]
+)
+#ex:
+# add_executable(myApp main.c)
+# add_executable(myAlias ALIAS myApp)
+# add_library(myLib STATIC src.cpp)
+# include(CMakePrintHelpers)
+# cmake_print_properties(TARGETS myApp myLib myAlias
+#                       PROPERTIES TYPE ALIASED_TARGET)
+#输出:
+#Properties for TARGET myApp:
+#   myApp.Type = "EXECUTABLE"
+#   myApp.ALIASED_TARGET = <NOTFOUND>
+#Properties for TARGET myLib:
+#   myLib.TYPE = "STATIC_LIBRARY"
+#   myLib.ALIASED_TARGET = <NOTFOUND>
+#Properties for TARGET myAlias: 
+#   myAlias.TYPE = "EXECUTABLE"
+#   myAlias.ALIASED_TARGET = "myApp"
+#
 
-
-
+include(CMakePrintHelpers)
+cmake_print_variables(var1 [var2...]) #用于打印所有Variable的值（无论其来源）
+#ex:
+# set(foo "My variable")
+# unset(bar)
+# include(CMakePrintHelpers)
+# cmake_print_variables(foo bar CMAKE_VERSION)
+#输出: foo ="My variable";bar="";CMAKE_VERSION="3.8.2"
