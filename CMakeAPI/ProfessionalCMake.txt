@@ -408,3 +408,9 @@ cmake_print_variables(var1 [var2...]) #用于打印所有Variable的值（无论
 # include(CMakePrintHelpers)
 # cmake_print_variables(foo bar CMAKE_VERSION)
 #输出: foo ="My variable";bar="";CMAKE_VERSION="3.8.2"
+
+#用来测试平台大小端
+include(TestBigEndian)
+test_big_endian(isBigEndian)
+message("Is target system big endian: ${isBigEndian}")
+

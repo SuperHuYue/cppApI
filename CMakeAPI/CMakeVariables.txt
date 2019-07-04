@@ -15,3 +15,4 @@ CMAke_CURRENT_LIST_FILE  #给出正在进行处理的文件的绝对path
 
 CMAKE_CURRENT_LIST_LINE  #hold当前正在处理的文件命令的行数    
 #####################################################################    
+CMAKE_MODULE_PATH  #list of directories 用来为include提供module的搜索路径，并使用第一个匹配的文件，如果未曾找到匹配的内容，那么就会在去cmake的默认module存放位置进行查找
