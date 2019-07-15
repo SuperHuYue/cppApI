@@ -68,3 +68,31 @@ int main() {
 	cout << endl;
 	return 0;
 }
+
+
+
+
+//plan B 运用stringstream库完成目的
+// #include <sstream>
+// #include <iostream>
+// #include <vector>
+// #include <array>
+// using namespace  std;
+// #define check ','
+// int main() {
+// 	string test = "12,3,444,5453 , 12334,  54363 ";
+// 	vector<array<char, 10>> out;
+// 	stringstream ss{test};
+// 	for (array<char,10> inner{'0'}; ss.getline(&inner[0], 10, check);inner.fill('0'))
+// 	{
+// 		out.push_back(inner);
+// 	}
+
+// 	for (auto &itr : out)
+// 	{
+// 		cout << itr.data() << endl;
+// 	}
+
+// 	return 0;
+// }
+
