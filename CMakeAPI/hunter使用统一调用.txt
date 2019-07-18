@@ -1,7 +1,6 @@
-make_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.12)
 #cmake_policy(VERSION 3.12)
 
-project()
 
 #######################################################
 #安装依赖
@@ -20,22 +19,26 @@ if(NOT EXISTS "${CMAKE_BINARY_DIR}/HunterGate.cmake")
   message(STATUS "Download HunterGate.cmake script - done")
 endif()
 include("${CMAKE_BINARY_DIR}/HunterGate.cmake")
+HunterGate(
+  URL "https://github.com/ruslo/hunter/archive/v0.23.204.tar.gz"
+  SHA1 "32cfed254da901f6f184027d530d8da47e035b85"
+)
+
+set(PROJECT_NAME testhunter)
+project(${PROJECT_NAME}) #顺序不允许改
 ########################################################
 #add jsoncpp all is like this
-include("../common.cmake")
-
-project(download-jsoncpp)
 
 hunter_add_package(jsoncpp)
 
 find_package(jsoncpp CONFIG REQUIRED)
 
-add_executable(version main.cpp)
+add_executable(${PROJECT_NAME} main.cpp)
 
 if(${HUNTER_jsoncpp_VERSION} VERSION_LESS 1.0.0)
-  target_link_libraries(version jsoncpp_lib)
+  target_link_libraries(${PROJECT_NAME} jsoncpp_lib)
 else()
-  target_link_libraries(version jsoncpp_lib_static)
+  target_link_libraries(${PROJECT_NAME} jsoncpp_lib_static)
 endif()
 #end
 ##############################################################警告视为错误
