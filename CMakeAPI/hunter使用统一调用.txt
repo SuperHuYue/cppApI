@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+﻿cmake_minimum_required(VERSION 3.12)
 #cmake_policy(VERSION 3.12)
 
 
@@ -19,6 +19,14 @@ if(NOT EXISTS "${CMAKE_BINARY_DIR}/HunterGate.cmake")
   message(STATUS "Download HunterGate.cmake script - done")
 endif()
 include("${CMAKE_BINARY_DIR}/HunterGate.cmake")
+
+set(HUNTER_ROOT_POS "${CMAKE_BINARY_DIR}/source") #设置依赖根目录
+if(NOT EXISTS ${HUNTER_ROOT_POS})
+  file(MAKE_DIRECTORY ${HUNTER_ROOT_POS})
+  message(STATUS "NEW DIRECTORY CREATED...")
+endif()
+set(HUNTER_ROOT ${HUNTER_ROOT_POS}) #将依赖文件设置到具体的目录下，而不是默认值(前提，该目录必须存在，否则又会在默认路径下创建)
+
 HunterGate(
   URL "https://github.com/ruslo/hunter/archive/v0.23.204.tar.gz"
   SHA1 "32cfed254da901f6f184027d530d8da47e035b85"
@@ -52,14 +60,12 @@ else()
 endif()
 ###############################################################
 #设置windows平台下的的调试工作路径
-if(MSVC)
-    message(STATUS "enter....")
-    set_target_properties(main PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/lib/haha)
-elseif(GNU)
-     
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin) #设置工程文件的输出路径
+if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+  message(STATUS "Set Work Directory...")
+  set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}/${CMAKE_CFG_INTDIR})
 endif()
 ################################################################
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin) #设置工程文件的输出路径
 set_target_properties(
   ${PROJECT_NAME}
   PROPERTIES CXX_STANDARD          17
