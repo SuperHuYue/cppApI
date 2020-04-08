@@ -1,0 +1,31 @@
+[first]
+a_int=1
+b_float=  1.1415926
+c_str=hello_world
+
+
+[sec]
+a_int=2
+b_float=2.14 15926
+c_str=hello_wo rld2
+
+
+[william]
+dsad= dsad
+fdsjnk = 123.232
+sdasjkl = jkejk
+jjjj = dsadas
+1111 =2222
+
+
+[jack]
+william = 1990
+ jack = 1996
+java = 2012
+ json = 112233.21234
+
+[fuck_end]
+j
+jj=1
+jjj=123
+jjjj =
